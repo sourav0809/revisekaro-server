@@ -67,6 +67,12 @@ const registerUser = catchAsync(async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * @function loginUser
+ * @param {Request} req - Express request object containing user login data
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>}
+ */
 const loginUser = catchAsync(async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
