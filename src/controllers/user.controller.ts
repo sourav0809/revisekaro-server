@@ -10,14 +10,8 @@ import { SALT_ROUNDS } from "../constant/common";
 import { errorMessages } from "../constant/errorMessages";
 import { successMessages } from "../constant/successMessages";
 
-interface RegisterUserDTO {
-  name: string;
-  email: string;
-  password: string;
-}
-
 const registerUser = catchAsync(async (req: Request, res: Response) => {
-  const { email, name, password } = req.body as RegisterUserDTO;
+  const { email, name, password } = req.body;
 
   try {
     // Check if user exists
