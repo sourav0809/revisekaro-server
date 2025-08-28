@@ -11,6 +11,7 @@ import { errorMessages } from "../constant/errorMessages";
 import { successMessages } from "../constant/successMessages";
 
 const registerUser = catchAsync(async (req: Request, res: Response) => {
+  // Get user data
   const { email, name, password } = req.body;
 
   try {
