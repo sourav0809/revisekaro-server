@@ -3,3 +3,5 @@ export const SERVER_ENVIRONMENT = {
   PRODUCTION: "production",
   TEST: "test",
 };
+
+export const SALT_ROUNDS = 10;

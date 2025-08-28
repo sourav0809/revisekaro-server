@@ -21,11 +21,15 @@ if (error) {
 }
 
 interface EnvConfig {
-  nodeEnv: string;
-  port: number;
+  server: {
+    env: string;
+    port: number;
+  };
 }
 
 export const envConfig: EnvConfig = {
-  nodeEnv: value.NODE_ENV,
-  port: value.PORT,
+  server: {
+    env: value.NODE_ENV,
+    port: value.PORT,
+  },
 };

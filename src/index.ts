@@ -1,44 +1,54 @@
-import express from "express";
-import cors from "cors";
-import helmet from "helmet";
-import { config } from "dotenv";
-import { notFound } from "./middleware/common.middleware";
-import { errorHandler } from "./middleware/error.middleware";
+/* eslint-disable @typescript-eslint/no-var-requires */
+import { Server } from "http";
+
+import app from "./app";
 import { envConfig } from "./config/envConfig";
-import logger from "./config/logger";
-import { PrismaClient } from "@prisma/client";
+import Logger from "./config/logger";
 
-config();
-
-const app = express();
-const PORT = envConfig.port;
-
-// Database
-const prisma = new PrismaClient();
-prisma.$connect().then(() => {
-  logger.info("Database connected");
+const server: Server = app.listen(envConfig.server.port, () => {
+  Logger.log(
+    "info",
+    `Server is running at port ${envConfig.server.port} in ${envConfig.server.env} mode`
+  );
 });
 
-// Middleware
-app.use(helmet());
-app.use(cors());
-app.use(express.json());
+const exitHandler = () => {
+  if (server) {
+    server.close(() => {
+      Logger.log("info", {
+        message: "Server closed",
+      });
+      process.exit(1);
+    });
+  } else {
+    process.exit(1);
+  }
+};
 
-// Health check
-app.get("/health", (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Healthy",
+const unexpectedErrorHandler = (error: Error) => {
+  Logger.log("error", {
+    message: "Unexpected error occurred",
+    error: error.message,
   });
+  exitHandler();
+};
+
+process.on("uncaughtException", unexpectedErrorHandler);
+process.on("unhandledRejection", unexpectedErrorHandler);
+
+process.on("SIGTERM", () => {
+  Logger.log("info", {
+    message: "SIGTERM received",
+  });
+
+  if (server) {
+    server.close();
+  }
 });
 
-// Error handling
-app.use(notFound);
-app.use(errorHandler);
-
-// Start server
-app.listen(PORT, () => {
-  logger.info(`Server running on port ${PORT}`);
+process.on("exit", () => {
+  Logger.log("info", {
+    message: "Server Crashed, restarting...",
+  });
+  require("child_process").fork(__filename);
 });
-
-export default app;
