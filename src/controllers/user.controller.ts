@@ -11,12 +11,15 @@ import { errorMessages } from "../constant/errorMessages";
 import { successMessages } from "../constant/successMessages";
 import { envConfig } from "../config/envConfig";
 
+/**
+ * @function registerUser
+ * @param {Request} req - Express request object containing user registration data
+ * @param {Response} res - Express response object
+ */
 const registerUser = catchAsync(async (req: Request, res: Response) => {
-  // Get user data
   const { email, name, password } = req.body;
 
   try {
-    // Check if user exists
     const existingUser = await userService.findOne({
       email: email.toLowerCase(),
     });
@@ -37,10 +40,8 @@ const registerUser = catchAsync(async (req: Request, res: Response) => {
       password: hashedPassword,
     };
 
-    // Save user
     const newUser: User = await userService.create(userData);
 
-    // Generate JWT
     const token = jwt.sign(
       { id: newUser.id, email: newUser.email },
       envConfig.secretKey.jwtSecretKey,
@@ -66,6 +67,53 @@ const registerUser = catchAsync(async (req: Request, res: Response) => {
   }
 });
 
+const loginUser = catchAsync(async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  try {
+    const existingUser = await userService.findOne({
+      email: email.toLowerCase(),
+    });
+
+    if (!existingUser) {
+      return response(
+        res,
+        httpStatus.NOT_FOUND,
+        errorMessages.User.USER_NOT_FOUND
+      );
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      existingUser.password
+    );
+
+    if (!isPasswordValid) {
+      return response(res, httpStatus.UNAUTHORIZED, "Invalid credentials");
+    }
+
+    // Generate JWT
+    const token = jwt.sign(
+      { id: existingUser.id, email: existingUser.email },
+      envConfig.secretKey.jwtSecretKey,
+      { expiresIn: "1d" }
+    );
+
+    return response(res, httpStatus.OK, "Login successful", {
+      user: {
+        id: existingUser.id,
+        name: existingUser.name,
+        email: existingUser.email,
+      },
+      token,
+    });
+  } catch (error: unknown) {
+    const err = error as Error;
+    return response(res, httpStatus.INTERNAL_SERVER_ERROR, err.message);
+  }
+});
+
 export default {
   registerUser,
+  loginUser,
 };
