@@ -2,7 +2,7 @@
 import express from "express";
 import AuthRoutes from "./auth.routes";
 import UserRoutes from "./user.routes";
-import { envConfig } from "src/config/envConfig";
+import { envConfig } from "../config/envConfig";
 
 const router = express.Router();
 

@@ -9,6 +9,7 @@ import userService from "../services/user.service";
 import { SALT_ROUNDS } from "../constant/common";
 import { errorMessages } from "../constant/errorMessages";
 import { successMessages } from "../constant/successMessages";
+import { envConfig } from "../config/envConfig";
 
 const registerUser = catchAsync(async (req: Request, res: Response) => {
   // Get user data
@@ -18,7 +19,7 @@ const registerUser = catchAsync(async (req: Request, res: Response) => {
     // Check if user exists
     const existingUser = await userService.findOne({
       email: email.toLowerCase(),
-    } as Prisma.UserWhereInput);
+    });
 
     if (existingUser) {
       return response(
@@ -42,7 +43,7 @@ const registerUser = catchAsync(async (req: Request, res: Response) => {
     // Generate JWT
     const token = jwt.sign(
       { id: newUser.id, email: newUser.email },
-      process.env.JWT_SECRET as string,
+      envConfig.secretKey.jwtSecretKey,
       { expiresIn: "1d" }
     );
 

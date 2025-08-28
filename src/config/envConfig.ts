@@ -9,6 +9,7 @@ const envVarsSchema = Joi.object()
       .valid("production", "development", "test")
       .required(),
     PORT: Joi.number().default(8001),
+    JWT_SECRET_KEY: Joi.string().required(),
   })
   .unknown();
 
@@ -25,11 +26,17 @@ interface EnvConfig {
     env: string;
     port: number;
   };
+  secretKey: {
+    jwtSecretKey: string;
+  };
 }
 
 export const envConfig: EnvConfig = {
   server: {
     env: value.NODE_ENV,
     port: value.PORT,
+  },
+  secretKey: {
+    jwtSecretKey: value.JWT_SECRET_KEY,
   },
 };
